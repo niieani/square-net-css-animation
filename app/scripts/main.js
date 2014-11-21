@@ -220,58 +220,18 @@
           await timeout(treeLine.interval);
           node.extendLine();
           nextType = treeLine.getRandomType(type);
-          //treeLine.nodes[treeLine.nodes.length-1].extendLine();
-          //setTimeout(function(){
-          //  treeLine.addNode(node.lastX, node.lastY, nextType, type);
-          //}, 300);
         }
         await timeout(treeLine.interval);
         node.extendLine();
         await treeLine.addNode(node.lastX, node.lastY, nextType, type);
       }
-      /*
-      this.generator = setTimeout(function(){
-        if (treeLine.nodes.length > treeLine.iterations){
-          //clearTimeout(treeLine.generator);
-          return;
-        }
-        node.extendLine();
-
-        let nextType = treeLine.getRandomType(type);
-        //let nextType = treeLine.nodes.size <= 4 ? (treeLine.nodes.size % 2 === 1 ? 'right' : 'up') : (treeLine.nodes.size % 2 === 1 ? 'left' : 'up');
-        //let nextType = 'left';
-        treeLine.addNode(node.lastX, node.lastY, nextType, type);
-      }, 300);
-      */
     }
   }
 
-  //async function startDelayed() {
-  //  await timeout(5000);
     // LIFE TREE
   var lifeTree = querySelector('.life-tree');
   var treeLine = new TreeLine(lifeTree, 20, -50, 0, 70, 'color-dark-blue', 100);
   var treeLine2 = new TreeLine(lifeTree, 20, 0, 0, 80, 'color-red', 100);
   var treeLine3 = new TreeLine(lifeTree, 20, 50, 0, 70, 'color-violet', 100);
-  //}
-  //startDelayed();
-
-
-/*
-  var extendLine = function(){
-    treeLine.extendLine();
-  };
-  var lineExtending = setInterval(extendLine, 2000);
-*/
-  /*
-  var line = new TreeLine(lifeTree);
-
-  var extendLine = function(){
-    console.log(height);
-    height += 20;
-    line.style.height = height + 'px';
-  };
-  //var lineExtending = setInterval(extendLine, 2000);
-  */
 
 })();
