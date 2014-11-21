@@ -17,17 +17,14 @@
  *
  */
 
-//var animationLines = [];
-
 (function () {
   'use strict';
 
   var querySelector = document.querySelector.bind(document);
 
-  var navdrawerContainer = querySelector('.navdrawer-container');
   var body = document.body;
+  var navdrawerContainer = querySelector('.navdrawer-container');
   var appbarElement = querySelector('.app-bar');
-  //var topHeaderElement = querySelector('.top-header');
   var menuBtn = querySelector('.menu');
   var main = querySelector('main');
 
@@ -35,13 +32,11 @@
     body.classList.remove('open');
     appbarElement.classList.remove('open');
     navdrawerContainer.classList.remove('open');
-    //topHeaderElement.classList.remove('open');
   }
 
   function toggleMenu() {
     body.classList.toggle('open');
     appbarElement.classList.toggle('open');
-    //topHeaderElement.classList.toggle('open');
     navdrawerContainer.classList.toggle('open');
     navdrawerContainer.classList.add('opened');
   }
@@ -74,24 +69,49 @@
 
   class TreeVerticalNode extends TreeNode {
     constructor(lifeTree, startX, startY, growDirection = 'up', prevDirection = 'up') {
-
       super(lifeTree, startX, startY);
 
-      if (prevDirection === 'left' && growDirection === 'up')
-        this.subtractMode = true;
+      if (growDirection === 'up')
+      {
+        startY = -startY;
+        startX = -startX;
 
-      else if (prevDirection === 'up')
-        startY = startY - TREE_THICKNESS;
+        if (prevDirection === 'left')
+        {
+          this.subtractMode = true;
+          startY = startY - TREE_THICKNESS;
+        }
 
-      else if (prevDirection === 'right')
-        startX = startX - TREE_THICKNESS;
+        else if (prevDirection === 'up')
+          startY = startY - TREE_THICKNESS;
+
+        else if (prevDirection === 'right')
+        {
+          startX = -startX;
+          startY = startY - TREE_THICKNESS;
+          startX = startX - TREE_THICKNESS;
+        }
+      }
+      else // grow down
+      {
+        //if (prevDirection === 'left')
+        //  this.subtractMode = true;
+
+        //if (prevDirection === 'left')
+        //  startX = startX + TREE_THICKNESS;
+        //  startY = startY - TREE_THICKNESS;
+
+        if (prevDirection === 'right')
+          //startY = startY - TREE_THICKNESS;
+          startX = startX - TREE_THICKNESS;
+      }
 
       this.lineElement.style.left = startX + 'px';
 
       this.initialX = startX;
       this.initialY = startY;
 
-      this.lineElement.className += ' line vertical';
+      this.lineElement.className += ' line vertical ' + growDirection;
       switch(growDirection)
       {
         case 'up':
@@ -120,26 +140,84 @@
 
       super(lifeTree, startX, startY);
 
-      if (prevDirection === 'up' && growDirection === 'left')
+      if (growDirection === 'left')
       {
-        this.subtractMode = true;
-        startX = startX + TREE_THICKNESS;
+        startY = -startY;
+        if (prevDirection === 'up')
+        {
+          startX = -startX;
+          //this.subtractMode = true;
+          startX = startX - TREE_THICKNESS;
+          //startY = startY + TREE_THICKNESS;
+        }
+
+        else if (prevDirection === 'down')
+        {
+          startY = -startY;
+          //startY = -startY;
+          //this.lineElement.style.top = startY + 'px';
+          this.subtractMode = true;
+          startX = startX + TREE_THICKNESS;
+          startY = startY - TREE_THICKNESS;
+          //this.subtractMode = true;
+          //startX = startX + TREE_THICKNESS;
+        }
+
+        else if (prevDirection === 'left')
+          this.subtractMode = true;
+      }
+      else // grow RIGHT
+      {
+        if (prevDirection === 'up')
+        {
+          startY = -startY;
+          //startY = startY + TREE_THICKNESS;
+        }
+
+        else if (prevDirection === 'down')
+        {
+          startY = startY - TREE_THICKNESS;
+          //startY = -startY;
+          //this.lineElement.style.top = startY + 'px';
+        }
+
+        else if (prevDirection === 'right')
+        {
+          startX = startX - TREE_THICKNESS;
+          startY = startY - TREE_THICKNESS;
+        }
       }
 
-      if (prevDirection === 'left' && growDirection === 'left')
-        this.subtractMode = true;
+/*
+      //if (prevDirection === 'up')
+      //{
 
-      else if (prevDirection === 'up')
-        startY = startY - TREE_THICKNESS;
-
-      else if (prevDirection === 'right')
-        startX = startX - TREE_THICKNESS;
-
+      //}
+      if (prevDirection === 'down')
+      {
+        if (growDirection === 'right')
+        {
+          //this.subtractMode = true;
+          //startX = startX - TREE_THICKNESS;
+        }
+        if (growDirection === 'left')
+        {
+          this.subtractMode = true;
+          startX = startX + TREE_THICKNESS;
+        }
+        //this.subtractMode = true;
+      }
+      else
+      {
+        this.lineElement.style.bottom = startY + 'px';
+      }
+*/
+      //this.lineElement.style.bottom = startY + 'px';
+      this.lineElement.style.top = startY + 'px';
       this.initialX = startX;
       this.initialY = startY;
 
-      this.lineElement.className += ' line horizontal';
-      this.lineElement.style.bottom = startY + 'px';
+      this.lineElement.className += ' line horizontal ' + growDirection;
 
       switch(growDirection)
       {
@@ -165,7 +243,6 @@
     }
   }
 
-
   function timeout(ms) {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -173,20 +250,25 @@
   }
 
   class TreeLine {
-    constructor(lifeTree, extendBy = 20, startX = 0, startY = 0, iterations = 60, classes = '', interval = 300) {
+    constructor(lifeTree, extendBy = 20, startX = 0, startY = 0, iterations = 60, classes = '', interval = 300, directions = ['down', 'left', 'right']) {
       this.treeElement = lifeTree;
       this.nodes = [];
       this.extendBy = extendBy;
       this.iterations = iterations;
       this.interval = interval;
       this.classes = classes;
-      this.types = ['up', 'left', 'right'];
-      this.addNode(startX, startY, 'up');
+      this.types = directions; //'down',
+      //this.types = ['up', 'down', 'left', 'right']; //'down',
+      //this.types = ['down', 'left'];
+      //this.addNode(startX, startY, 'up');
+      this.addNode(startX, startY, 'down');
     }
     getRandomType(prevType) {
       let nextType;
+
       do nextType = this.types[Math.floor(Math.random() * this.types.length)];
-      while ((prevType === 'left' && nextType === 'right') || (prevType === 'right' && nextType === 'left') || (prevType === 'up' && nextType === 'up'));
+      while ((prevType === 'left' && nextType === 'right') || (prevType === 'right' && nextType === 'left') || (prevType === 'up' && nextType === 'down') || (prevType === 'down' && nextType === 'up') || (prevType === 'up' && nextType === 'up') || (prevType === 'down' && nextType === 'down'));
+
       return nextType;
     }
     async addNode(startX, startY, type = 'up', prevType = 'up') {
@@ -209,11 +291,11 @@
           break;
       }
 
-      //console.log('adding node X & Y', type, startX, startY, node);
+      console.log('adding node X & Y', type, startX, startY, node);
       this.nodes.push(node);
 
       while (treeLine.nodes.length < treeLine.iterations) {
-        console.log(treeLine.nodes.length, treeLine.iterations);
+        //console.log(treeLine.nodes.length, treeLine.iterations);
         let nextType = treeLine.getRandomType(type);
         while (type === 'left' && nextType === 'left' || type === 'right' && nextType === 'right')
         {
@@ -225,13 +307,15 @@
         node.extendLine();
         await treeLine.addNode(node.lastX, node.lastY, nextType, type);
       }
+
     }
   }
 
-    // LIFE TREE
+  // LIFE TREE
   var lifeTree = querySelector('.life-tree');
-  var treeLine = new TreeLine(lifeTree, 20, -50, 0, 70, 'color-dark-blue', 100);
-  var treeLine2 = new TreeLine(lifeTree, 20, 0, 0, 80, 'color-red', 100);
-  var treeLine3 = new TreeLine(lifeTree, 20, 50, 0, 70, 'color-violet', 100);
+  //var lifeTree = querySelector('body');
+  var treeLine = new TreeLine(lifeTree, 20, -50, 0, 70, 'color-dark-blue', 100, ['down', 'left', 'right']);
+  var treeLine2 = new TreeLine(lifeTree, 20, 0, 0, 80, 'color-red', 100, ['down', 'left', 'right']);
+  var treeLine3 = new TreeLine(lifeTree, 20, 50, 0, 70, 'color-violet', 100, ['down', 'left', 'right']);
 
 })();
