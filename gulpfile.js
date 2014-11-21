@@ -26,6 +26,7 @@ var del = require('del');
 var runSequence = require('run-sequence');
 var browserSync = require('browser-sync');
 var pagespeed = require('psi');
+var to5 = require('gulp-6to5');
 var reload = browserSync.reload;
 
 var AUTOPREFIXER_BROWSERS = [
@@ -72,6 +73,18 @@ gulp.task('copy', function () {
     .pipe($.size({title: 'copy'}));
 });
 
+// Copy All Files At The Root Level (app)
+gulp.task('copy-runtimes', function () {
+  return gulp.src([
+    'node_modules/regenerator/runtime.js'
+  ], {
+    dot: true
+  }).pipe(gulp.dest('dist/scripts/vendor'))
+    .pipe(gulp.dest('.dev/scripts/vendor'))
+    .pipe($.size({title: 'copy'}));
+});
+
+
 // Copy Web Fonts To Dist
 gulp.task('fonts', function () {
   return gulp.src(['app/fonts/**'])
@@ -107,6 +120,8 @@ gulp.task('html', function () {
 
   return gulp.src('app/**/*.html')
     .pipe(assets)
+    // ES 6-to-5
+    .pipe($.if('*.js', to5()))
     // Concatenate And Minify JavaScript
     .pipe($.if('*.js', $.uglify({preserveComments: 'some'})))
     // Remove Any Unused CSS
@@ -137,6 +152,23 @@ gulp.task('html', function () {
     .pipe($.size({title: 'html'}));
 });
 
+// Scan Your HTML For Assets & Optimize Them
+gulp.task('dev-tmp', function () {
+  var assets = $.useref.assets({searchPath: '{.tmp,app}'});
+
+  return gulp.src('app/**/*.html')
+    .pipe(assets)
+    // ES 6-to-5
+    .pipe($.if('*.js', to5({experimental: true})))
+    .pipe(assets.restore())
+    .pipe($.useref())
+    // Update Production Style Guide Paths
+    .pipe($.replace('components/components.css', 'components/main.min.css'))
+    // Output Files
+    .pipe(gulp.dest('.dev'))
+    .pipe($.size({title: 'html'}));
+});
+
 // Clean Output Directory
 gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
 
@@ -154,6 +186,23 @@ gulp.task('serve', ['styles'], function () {
   gulp.watch(['app/**/*.html'], reload);
   gulp.watch(['app/styles/**/*.{scss,css}'], ['styles', reload]);
   gulp.watch(['app/scripts/**/*.js'], ['jshint']);
+  gulp.watch(['app/images/**/*'], reload);
+});
+
+// Watch Files For Changes & Reload
+gulp.task('serve:dev', ['styles', 'copy-runtimes', 'dev-tmp'], function () {
+  browserSync({
+    notify: false,
+    // Run as an https by uncommenting 'https: true'
+    // Note: this uses an unsigned certificate which on first access
+    //       will present a certificate warning in the browser.
+    // https: true,
+    server: ['.tmp', '.dev', 'app']
+  });
+
+  gulp.watch(['app/**/*.html'], reload);
+  gulp.watch(['app/styles/**/*.{scss,css}'], ['styles', reload]);
+  gulp.watch(['app/scripts/**/*.js'], ['jshint', 'dev-tmp']);
   gulp.watch(['app/images/**/*'], reload);
 });
 
