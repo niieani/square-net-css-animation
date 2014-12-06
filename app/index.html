@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="description" content="A front-end template that helps you build fast, modern mobile web apps.">
+    <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Web Starter Kit</title>
+    <title>invent.life</title>
 
     <!-- Add to homescreen for Chrome on Android -->
     <meta name="mobile-web-app-capable" content="yes">
@@ -26,40 +26,56 @@
     <link rel="canonical" href="http://www.example.com/">
     -->
 
-    <!-- Page styles -->
-    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/invent.css">
   </head>
   <body>
-    <header class="app-bar promote-layer">
-      <div class="app-bar-container">
-        <button class="menu"><img src="images/hamburger.svg" alt="Menu"></button>
-        <h1 class="logo">Web <strong>Starter Kit</strong></h1>
-        <section class="app-bar-actions">
-        <!-- Put App Bar Buttons Here -->
-        <!-- e.g <button><i class="icon icon-star"></i></button> -->
-        </section>
+      <header class="app-bar promote-layer">
+        <div class="app-bar-container">
+          <button class="menu"><img src="images/hamburger.svg" alt="Menu"></button>
+          <h1 class="logo">invent.<strong>life</strong></h1>
+
+          <!--<section class="app-bar-actions">-->
+            <!--<button><i class="icon icon-star"></i></button>-->
+          <!--</section>-->
+        </div>
+
+        <nav class="navdrawer-container promote-layer">
+          <!--<h4>Navigation</h4>-->
+          <ul>
+            <li><a href="#hello">hello</a></li>
+            <li><a href="#get-started">works</a></li>
+            <li><a href="#writing">writing</a></li>
+            <li><a href="#writing">art</a></li>
+            <li><a href="#writing">artlab</a></li>
+            <li><a href="#writing">snippets</a></li>
+            <li><a href="#writing">caféctivity</a></li>
+          </ul>
+        </nav>
+      </header>
+
+      <main class="content hello">
+        <button data-icon="f" class="icon prev"></button>
+        <article class="text">
+          <h1>Hello. I'm Bazyli.</h1>
+          <!--<p>I am an <strong>inventor</strong> who's passionate about revolutionizing the ways we interact with technology.</p>-->
+        </article>
+        <button data-icon="g" class="icon next"></button>
+      </main>
+
+      <div class="space-after-content">
+        <!--<div class="life-tree"></div>-->
       </div>
-    </header>
 
-    <nav class="navdrawer-container promote-layer">
-      <h4>Navigation</h4>
-      <ul>
-        <li><a href="#hello">Hello</a></li>
-        <li><a href="#get-started">Get Started</a></li>
-        <li><a href="styleguide.html">Style Guide</a></li>
-      </ul>
-    </nav>
+    <!--<script src="scripts/vendor/move.min.js"></script>-->
 
-    <main>
-      <h1 id="hello">Hello!</h1>
-      <p>Welcome to Web Starter Kit.</p>
-
-      <h2 id="get-started">Get Started.</h2>
-      <p>Read how to <a href="http://developers.google.com/web/starter-kit">Get Started</a> or check out the <a href="styleguide.html">Style Guide</a>.</p>
-    </main>
-
-    <!-- build:js scripts/main.min.js -->
+    <script src="scripts/vendor/Promise.js"></script>
+    <script src="scripts/vendor/browser-polyfill.js"></script>
+    <script src="scripts/vendor/runtime.js"></script>
+    <!-- build:js scripts/main.js -->
     <script src="scripts/main.js"></script>
+    <!-- endbuild -->
+    <!-- build:js scripts/lifetree.js -->
+    <!--<script src="scripts/lifetree.js"></script>-->
     <!-- endbuild -->
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->

@@ -45,7 +45,20 @@ var AUTOPREFIXER_BROWSERS = [
 gulp.task('jshint', function () {
   return gulp.src('app/scripts/**/*.js')
     .pipe(reload({stream: true, once: true}))
-    .pipe($.jshint())
+    .pipe($.jshint({
+      "esnext": true
+    }))
+    .pipe($.jshint.reporter('jshint-stylish'))
+    .pipe($.if(!browserSync.active, $.jshint.reporter('fail')));
+});
+
+// Lint JavaScript Dev
+gulp.task('jshint:dev', function () {
+  return gulp.src('.tmp/scripts/*.js')
+    //.pipe(reload({stream: true, once: true}))
+    .pipe($.jshint({
+      "esnext": true
+    }))
     .pipe($.jshint.reporter('jshint-stylish'))
     .pipe($.if(!browserSync.active, $.jshint.reporter('fail')));
 });
@@ -76,11 +89,12 @@ gulp.task('copy', function () {
 // Copy All Files At The Root Level (app)
 gulp.task('copy-runtimes', function () {
   return gulp.src([
-    'node_modules/regenerator/runtime.js'
+    'node_modules/regenerator/runtime.js',
+    'node_modules/6to5/browser-polyfill.js'
   ], {
     dot: true
   }).pipe(gulp.dest('dist/scripts/vendor'))
-    .pipe(gulp.dest('.dev/scripts/vendor'))
+    .pipe(gulp.dest('.tmp/scripts/vendor'))
     .pipe($.size({title: 'copy'}));
 });
 
@@ -153,20 +167,20 @@ gulp.task('html', function () {
 });
 
 // Scan Your HTML For Assets & Optimize Them
-gulp.task('dev-tmp', function () {
-  var assets = $.useref.assets({searchPath: '{.tmp,app}'});
+gulp.task('html:dev', function () {
+  var assets = $.useref.assets({searchPath: 'app'});
 
   return gulp.src('app/**/*.html')
     .pipe(assets)
     // ES 6-to-5
     .pipe($.if('*.js', to5({experimental: true})))
-    .pipe(assets.restore())
-    .pipe($.useref())
+    //.pipe(assets.restore())
+    //.pipe($.useref())
     // Update Production Style Guide Paths
-    .pipe($.replace('components/components.css', 'components/main.min.css'))
+    //.pipe($.replace('components/components.css', 'components/main.min.css'))
     // Output Files
-    .pipe(gulp.dest('.dev'))
-    .pipe($.size({title: 'html'}));
+    .pipe(gulp.dest('.tmp'))
+    .pipe($.size({title: 'html:dev'}));
 });
 
 // Clean Output Directory
@@ -190,19 +204,20 @@ gulp.task('serve', ['styles'], function () {
 });
 
 // Watch Files For Changes & Reload
-gulp.task('serve:dev', ['styles', 'copy-runtimes', 'dev-tmp'], function () {
+gulp.task('serve:dev', ['styles', 'copy-runtimes', 'html:dev'], function () {
   browserSync({
     notify: false,
     // Run as an https by uncommenting 'https: true'
     // Note: this uses an unsigned certificate which on first access
     //       will present a certificate warning in the browser.
     // https: true,
-    server: ['.tmp', '.dev', 'app']
+    server: ['.tmp', 'app']
   });
 
   gulp.watch(['app/**/*.html'], reload);
   gulp.watch(['app/styles/**/*.{scss,css}'], ['styles', reload]);
-  gulp.watch(['app/scripts/**/*.js'], ['jshint', 'dev-tmp']);
+  gulp.watch(['app/scripts/**/*.js'], ['html:dev']);
+  gulp.watch(['.tmp/scripts/*.js'], ['jshint:dev', reload]);
   gulp.watch(['app/images/**/*'], reload);
 });
 

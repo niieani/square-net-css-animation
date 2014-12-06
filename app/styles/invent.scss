@@ -109,23 +109,55 @@ body {
 }
 
 .content.hello {
-  width: 450px;
-  margin: auto;
+  display: flex;
+  justify-content: space-between;
+//  justify-content: space-around;
+//  margin: auto;
 
-  h1 {
-    text-align: center;
-    font-size: 4rem;
-    font-weight: 100;
+  .text {
+    width: 450px;
+    h1 {
+      text-align: center;
+      font-size: 65px;
+      font-weight: 100;
+    }
+
+    p {
+      font-size: 40px;
+    }
   }
 
-  p {
-    font-size: 4rem;
+  & > .icon {
+    font-size: 30px;
+    width: 60px;
+    margin: auto 10px;
+    line-height: 1;
+    padding: 9px 8px 6px 8px;
+    color: #9c9c9c;
+    background: #f4f4f4;
+    border: none;
+    transition: background-color 0.3s ease-out, color 0.3s ease-out;
+    -webkit-tap-highlight-color: transparent;
+
+    &:hover {
+      background: #dadada;
+      color: #4a4a4a;
+    }
+
+    &:focus {
+      outline: 0;
+    }
+
+    &:active {
+      background: #676767;
+      color: #ffffff;
+      transition: background-color 0.1s ease-out, color 0.1s ease-out;
+    }
   }
 
   & ~ .space-after-content {
-    height: 25%;
+    height: 20%;
   }
-
 }
 
 .space-after-content {
@@ -211,22 +243,28 @@ $mqIterations: 19;
   margin: 0 auto;
 }
 
-$size-2: 2px;
+$tree-line-thickness: 2px;
 
 .life-tree {
-
   position: absolute;
-//  left: 0;
-//  bottom: 0;
-//  top: 100%;
-//  right: 100%;
-
-  width: 0;
-  height: 0;
-//  position: absolute;
-//  top: 50%;
-  top: 0;
-  left: 30%;
+//  width: 0;
+//  height: 0;
+  /*
+  $size: 400px;
+  width: $size;
+  height: $size;
+  top: 10%;
+  left: 20%;
+  */
+  /*
+  .up {
+    margin-bottom: $size;
+  }
+  .left {
+    margin-right: $size;
+  }
+  */
+  overflow: hidden;
 
 //  opacity: 40;
 //  overflow: hidden;
@@ -240,7 +278,7 @@ $size-2: 2px;
   display: block;
 
   &.color-dark-blue {
-    background-color: rgba(darken($accent-color-a, 20), 0.5);
+    background-color: rgba(darken($accent-color-a, 20), 0.15);
   }
 
   &.color-red {
@@ -251,15 +289,24 @@ $size-2: 2px;
     background-color: rgba(#8666F0, 0.5);
   }
 
+  &.fade-out {
+    transition: all 1s ease-out !important;
+    background-color: rgba(white, 0) !important;
+  }
+
   &.horizontal {
-    height: $size-2;
+    height: $tree-line-thickness;
     width: 0;
-    //      width: $size-1;
+    &.fade-out {
+      width: 0 !important;
+    }
   }
   &.vertical {
-    //      height: $size-1;
     height: 0;
-    width: $size-2;
+    width: $tree-line-thickness;
+    &.fade-out {
+      height: 0 !important;
+    }
   }
 }
 
@@ -324,3 +371,5 @@ $size-2: 2px;
   src: url(/fonts/RobotoCondensed-BoldItalic.eot);
   src: local('Roboto Condensed Bold Italic'), local('RobotoCondensed-BoldItalic'), url(/fonts/RobotoCondensed-BoldItalic.eot) format('embedded-opentype'), url(/fonts/RobotoCondensed-BoldItalic.woff) format('woff');
 }
+
+@import 'vendor/essential-light-styles.scss';
