@@ -39,7 +39,7 @@ $sectionCount: 3;
 
 .sections {
   position: relative;
-  width: 100%;
+  width: 80%;
   height: $sectionHeight;
   overflow-y: scroll;
 //  height: 100%;
@@ -57,8 +57,10 @@ $sectionCount: 3;
 //    position: absolute;
 //    position: relative;
 //    height: $sectionHeight;
+//    width: 700px;
     width: 100%;
 
+//    position: absolute;
     position: relative;
     position: -webkit-sticky;
     position: sticky;
@@ -66,10 +68,9 @@ $sectionCount: 3;
     section {
 //      position: absolute;
       position: relative;
-      //    width: 100%;
+      width: 100%;
       //    height: 100%;
       height: $sectionHeight;
-      width: 700px;
       //transition: all 1000ms cubic-bezier(0.19, 1, 0.22, 1);
 //      @include reverseZOrder(3);
 
@@ -91,6 +92,8 @@ $sectionCount: 3;
     }
 
     &.previous-or-first {
+//      top: 100px;
+//      margin-top: 0;
 //      z-index: 2;
 //      overflow-y: scroll;
       section {
@@ -116,6 +119,8 @@ $sectionCount: 3;
     //    }
 
     &.current-or-second {
+      top: 50px;
+//      margin-top: $sectionHeight;
 //      z-index: 3;
 //      overflow-y: scroll;
 //      section {
@@ -125,6 +130,7 @@ $sectionCount: 3;
     }
 
     &.next {
+//      margin-top: $sectionHeight*2;
 //      z-index: 4;
 //      overflow-y: scroll;
 //      section:last-child {
@@ -151,7 +157,6 @@ $sectionCount: 3;
 */
 
   }
-
 }
 
 
@@ -178,14 +183,17 @@ $sectionCount: 3;
 
 .stick {
   position: absolute;
+  position: sticky;
   overflow: hidden;
+//  margin: 5%;
   width: 500px;
+//  width: 100%;
   height: 200px;
   background-color: #d500f9;
-  z-index: 1;
+//  z-index: 1;
   &.two {
     top: 300px;
     background-color: #3acef9;
-    z-index: 2;
+//    z-index: 2;
   }
 }

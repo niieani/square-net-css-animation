@@ -1,14 +1,13 @@
 "use strict";
 
-var stickIt = function(stick, frame, initialTopOffset)
+var stickIt = function(stick, frame)
 {
-  //var useAbsolute = false;
-
   // requestAnimationFrame may be prefixed
   var requestAnimationFrame = window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame;
 
+  var body = $(window);
   var pointerEventsEnabled = true;
 
   // HACK: enable scrolling with touch on Chrome/WebKit/WebView
@@ -36,19 +35,24 @@ var stickIt = function(stick, frame, initialTopOffset)
     });
   }
 
-  var originalHeight = stick.height();
-  originalHeight = originalHeight >= 0 ? originalHeight : 0;
-  console.log('height', originalHeight);
+  //var originalHeight = stick.height();
+  //originalHeight = originalHeight >= 0 ? originalHeight : 0;
+  //console.log('height', originalHeight);
 
-  //var originalTop = stick.css('top');
-  //var originalLeft = stick.css('left');
-  /*
-  var originalTopAuto = false;
-  if (originalTop === 'auto') originalTopAuto = true;
+  var originalTop = stick.css('top');
   originalTop = parseInt(originalTop);
-  console.log('top', stick.css('top'));
+  //console.log('top', stick.css('top'));
   originalTop = originalTop >= 0 ? originalTop : 0;
-  */
+
+  var originalLeft = stick.css('left');
+  originalLeft = parseInt(originalLeft);
+  //console.log('left', stick.css('left'));
+  originalLeft = originalLeft >= 0 ? originalLeft : 0;
+
+  var parentScrollChanged = true;
+  var bodyTopScrollAt;
+  var bodyLeftScrollAt;
+
 
   //originalTop = originalTop - initialTopOffset;
 //var originalTopReal = stick.top
@@ -57,148 +61,110 @@ var stickIt = function(stick, frame, initialTopOffset)
 
 //console.log(originalTop)
 
-  var realAbsoluteValues, originalTopReal, originalLeftReal
+  var realAbsoluteValues, originalTopReal, originalLeftReal;
 
   var updateAbsoluteValues = function(){
+    ////var scrollAt = frame.scrollTop();
     realAbsoluteValues = stick.get(0).getBoundingClientRect();
     originalTopReal = realAbsoluteValues.top;
     originalLeftReal = realAbsoluteValues.left;
   };
 
-  var timeout = null;
+  updateAbsoluteValues();
+
+  var usingAbsolute = true;
   var waitingForUpdate = false;
 
-  var setDefaultPositions = function() {
-    var scrollAt = frame.scrollTop();
-    var scrollLeftAt = frame.scrollLeft();
-    // new Height Again
-    var newHeight = originalHeight - scrollAt + initialTopOffset;
-    newHeight = newHeight < 0 ? 0 : newHeight;
-    newHeight = newHeight > originalHeight ? originalHeight : newHeight;
-    //stick.css('height', newHeight);
-
-    stick.removeClass('stuck');
-    stick.css('position', 'absolute');
-    console.log('returned to normal, absolute');
-    /*
-    if (scrollAt >= initialTopOffset)
-    {
-      //stick.css('top', originalTop + (originalHeight - newHeight) + 'px');
-      stick.css('top', scrollAt + 'px');
-      stick.css('left', scrollLeftAt + 'px');
-    }
-    else
-    {
-    */
-      //stick.css('top', originalTop + 'px');
-      stick.css('top', '');
-      stick.css('left', '');
-    //}
-
-    //nonFixed = false;
-    updateAbsoluteValues();
-
-    //stick.css('pointer-events', 'auto');
-    timeout = null;
-  };
+  //var setAbsolutePositioning = function() {
+  //};
 
   var setPositions = function() {
-    console.log('setting positions');
     var scrollAt = frame.scrollTop();
-
-    if (timeout !== null) {
-      clearTimeout(timeout);
-      // still during scroll continues...
+    if (parentScrollChanged)
+    {
+      bodyTopScrollAt = body.scrollTop();
+      bodyLeftScrollAt = body.scrollLeft();
     }
 
-    //originalTopReal = stick.offset().top - $(window).scrollTop();
+    console.log('setting positions', scrollAt, originalTop);
 
-    if (scrollAt >= initialTopOffset)
-    //if (false)
+    if (scrollAt >= originalTop)
     {
-
-      stick.css('position', 'fixed');
-      //stick.css('pointer-events', 'none');
-
-      var newHeight = originalHeight - scrollAt + initialTopOffset;
-      newHeight = newHeight < 0 ? 0 : newHeight;
-      newHeight = newHeight > originalHeight ? originalHeight : newHeight;
-      //stick.css('height', newHeight);
-
-      /*
-      if (scrollAt <= initialTopOffset)
+      if (usingAbsolute || parentScrollChanged)
       {
-        // TODO: implement
-        stick.css('top', originalTopReal - (originalHeight - newHeight) + 'px');
+        stick.css('position', 'fixed');
+        stick.css('top', originalTopReal - originalTop - bodyTopScrollAt + 'px');
+        stick.css('left', originalLeftReal - originalLeft - bodyLeftScrollAt + 'px');
+        stick.css('margin', '0');
+
+        stick.addClass('stuck');
+        usingAbsolute = false;
       }
-      else
-      {
-        stick.css('top', originalTopReal + 'px');
-      }
-      */
-      //stick.css('top', 'auto');
-      stick.css('top', originalTopReal + 'px');
-      stick.css('left', originalLeftReal + 'px');
-      stick.addClass('stuck');
       waitingForUpdate = false;
     }
     else
     {
-      waitingForUpdate = false;
-      //if (useAbsolute)
-      //{
-      //  timeout = setTimeout(function() {
-      //    requestAnimationFrame(function(){
-      //      setDefaultPositions();
-      //    });
-      //  }, 200);
-      //}
-      requestAnimationFrame(function()
+      if (!usingAbsolute)
       {
-        setDefaultPositions();
-      });
+        stick.removeClass('stuck');
+        stick.css('position', 'absolute');
+        console.log('returned to normal, absolute');
+
+        stick.css('top', '');
+        stick.css('left', '');
+        stick.css('margin', '');
+
+        usingAbsolute = true;
+      }
+      waitingForUpdate = false;
     }
-
-
-    /*
-     //firstInside.css('margin-top', scrollAt);
-     let scrollBefore = second.scrollTop();
-     //first.scrollTop(height);
-     console.log('scrolled, new top:', scrollAt);
-     //if (scrollAt >= height) {
-     //  second.scrollTop(scrollBefore + scrollAt - height);
-     second.scrollTop(scrollAt);
-     //}
-     */
   };
 
-  frame.scroll(function(e){
-    //console.log(e);
-    //var scrollAt = frame.scrollTop();
-      // Only trigger a layout change if we’re not already waiting for one
-      if (!waitingForUpdate) {
-        waitingForUpdate = true;
-        // Don’t update until next animation frame if we can, otherwise use a
-        // timeout - either will help avoid too many repaints
-        if (requestAnimationFrame) {
-          requestAnimationFrame(setPositions);
-        }
-        else {
-          setTimeout(setPositions, 15);
-        }
-      }
+  var triggerChange = function(parentScrollTrigger = false){
+    // Only trigger a layout change if we’re not already waiting for one [or parent triggered]
+    if (!waitingForUpdate || parentScrollTrigger) {
 
-    //}
+      if (parentScrollTrigger)
+        parentScrollChanged = true;
+
+      waitingForUpdate = true;
+      // Don’t update until next animation frame if we can, otherwise use a
+      // timeout - either will help avoid too many repaints
+      if (requestAnimationFrame) {
+        requestAnimationFrame(setPositions);
+      }
+      else {
+        setTimeout(setPositions, 15);
+      }
+    }
+
+  };
+
+  frame.scroll(function(){
+    triggerChange(false);
   });
+
+  // TODO: all parents of the element should be checked if they have a scrollbar and also tested for change
+  // additionally, sum the value of top and left of these scrolls to get the real thing
+  // this should be optional
+  // http://stackoverflow.com/questions/4814398/how-can-i-check-if-a-scrollbar-is-visible
+  body.scroll(function(){
+    triggerChange(true);
+  });
+
+  body.resize(function(){
+    triggerChange(true);
+  });
+
+  triggerChange(false);
 };
 
 var stickOne = $('.one');
 var stickTwo = $('.two');
 var frame = $('#frame');
-var frame2 = $('.frame2');
 
-stickIt(stickOne, frame, 0);
-stickIt(stickTwo, frame, 300);
+stickIt(stickOne, frame);
+stickIt(stickTwo, frame);
 
 
 /*
