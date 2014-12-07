@@ -72,50 +72,19 @@
     var data = $el.data("position:sticky")
     if (!data) return
 
-    //console.log(data);
-
-    var viewportScrollTop = data.$viewport.scrollTop();
-    var viewportScrollLeft = data.$viewport.scrollLeft();
-    //console.log('scroll', viewportScrollTop, 'scrollLeft', viewportScrollLeft);
-    //console.log('viewportScrollTop vs Original', viewportScrollTop, data.stickyDistanceTop);
-
-    if (parentScrollChanged)
-    {
-      data.bodyScrollTop = body.scrollTop();
-      data.bodyScrollLeft = body.scrollLeft();
-    }
-
     var placeholderDistanceFromBody;
-    //TODO: var otherCase = viewportScrollLeft >= data.absDistanceFromParentsLeft - data.stickyDistanceLeft;
+
+    // TODO: is this needed?
+    // var otherCase = viewportScrollLeft >= data.absDistanceFromParentsLeft - data.stickyDistanceLeft;
     var otherCase = false;
-
-    //console.log('top', data.placeholderDistanceFromBodyTop, data.stickyDistanceTop, data.absDistanceFromParentsTop, data.bodyScrollTop, data.placeholderDistanceFromBodyTop - data.absDistanceFromParentsTop - data.bodyScrollTop);
-    //console.log('viewportScrollTop, offset-top, original-top', viewportScrollTop, data.absDistanceFromParentsTop, data.stickyDistanceTop, Math.abs(data.absDistanceFromParentsTop - data.stickyDistanceTop));
-
-    //if (data.stickyDistanceTop === data.absDistanceFromParentsTop)
-    //if (viewportScrollTop >= Math.abs(data.absDistanceFromParentsTop - data.stickyDistanceTop))
-    //if (viewportScrollTop >= data.absDistanceFromParentsTop - data.stickyDistanceTop && data.stickyDistanceTop != data.absDistanceFromParentsTop || viewportScrollTop >= data.absDistanceFromParentsTop && data.stickyDistanceTop == data.absDistanceFromParentsTop)
     // TODO: add data.$viewport.position().left
     // TODO: make data.absDistanceFromParentsTop dynamic via the placeholder item
-    // data.$viewport.position().top -
-/*
-    var visibleDistanceFromViewportToParentTop,
-        realScrolledDistanceFromViewportTop;
-    if (data.usingAbsolute)
-    {
-
-    }
-*/
     // Fix for <HTML> with margin
-    //var viewportDistanceFromWindowTop = data.$viewport.get(0) === document.body ? 0 : data.$viewport.offset().top;
     var viewportDistanceFromWindowTop = data.$viewport.get(0) === document.body ? 0 : data.$viewport.get(0).getBoundingClientRect().top;
     var parentDistanceFromWindowTop = $el.parent().get(0).getBoundingClientRect().top;
     var placeholderDistanceFromWindowTop = data.usingAbsolute ? $el.get(0).getBoundingClientRect().top : data.$placeholder.get(0).getBoundingClientRect().top;
     var placeholderDistanceFromParentTop = placeholderDistanceFromWindowTop - parentDistanceFromWindowTop;
-
     var placeholderDistanceFromViewPortTop = placeholderDistanceFromWindowTop - viewportDistanceFromWindowTop;
-
-    // This is the real Scrolled Distance From Parent:
 
     var realScrolledDistanceFromViewportTop;
     if (data.$viewport.get(0) === document.body)
@@ -129,57 +98,19 @@
       //console.log('from viewport')
       realScrolledDistanceFromViewportTop = data.$viewport.scrollTop();
     }
-    /*
-    if (data.$viewport.hasScrollBar())
-      realScrolledDistanceFromViewportTop = data.$viewport.scrollTop();
-    else
-      realScrolledDistanceFromViewportTop = -(placeholderDistanceFromWindowTop - viewportDistanceFromWindowTop - placeholderDistanceFromParentTop);
-    */
-    //var visibleDistanceFromViewportToParentTop = $el.parent().offset().top - data.$viewport.offset().top;
 
-    //var visibleDistanceFromViewportToParentTop = $el.parent().get(0).getBoundingClientRect().top - viewportDistanceFromWindowTop;
-    //var realScrolledDistanceFromViewportTop = -visibleDistanceFromViewportToParentTop;
+    //console.log('realScrolledDistanceFromViewportTop', realScrolledDistanceFromViewportTop);
+    //console.log('viewportDistanceFromWindowTop', viewportDistanceFromWindowTop);
+    //console.log('placeholderDistanceFromWindowTop', placeholderDistanceFromWindowTop);
+    //console.log('parentDistanceFromWindowTop', parentDistanceFromWindowTop);
+    //console.log('placeholderDistanceFromParentTop', placeholderDistanceFromParentTop);
 
-
-    console.log('realScrolledDistanceFromViewportTop', realScrolledDistanceFromViewportTop);
-    console.log('viewportDistanceFromWindowTop', viewportDistanceFromWindowTop);
-    console.log('placeholderDistanceFromWindowTop', placeholderDistanceFromWindowTop);
-    console.log('parentDistanceFromWindowTop', parentDistanceFromWindowTop);
-    console.log('placeholderDistanceFromParentTop', placeholderDistanceFromParentTop);
-
-
-    //if (viewportScrollTop >= data.absDistanceFromParentsTop - data.stickyDistanceTop)
-    //if (realScrolledDistanceFromViewportTop >= data.absDistanceFromParentsTop - data.stickyDistanceTop)
-    //if (realScrolledDistanceFromViewportTop >= placeholderDistanceFromParentTop - data.stickyDistanceTop)
-    //if (placeholderDistanceFromParentTop <= data.stickyDistanceTop)
     if (placeholderDistanceFromViewPortTop <= data.stickyDistanceTop)
     {
-      // TEMPORARY
-      //otherCase = true;
       if (data.usingAbsolute || parentScrollChanged || otherCase)
       {
-        if (false)
-        //if (realScrolledDistanceFromViewportTop + data.fixedHeight + data.stickyDistanceTop >= $el.parent().innerHeight())
-        {
-            // this is the case we stick to the bottom
-            data.$placeholder.css('display', '');
-            $el.css('position', 'absolute');
-            $el.css('bottom', '0');
-            $el.css('top', 'initial');
-            //console.log('returned to normal, absolute');
-            // TODO return to previous values
-            $el.css('left', '');
-            $el.css('width', '');
-            $el.css('margin', '');
-            $el.css('overflow', '');
-            $el.css('height', '');
-            data.usingAbsolute = false;
-            data.waitingForUpdate = false;
-        }
-        else
-        {
-
           //console.log('setting position:', 'stuck', viewportScrollTop, data.stickyDistanceTop, 'parent changed?', parentScrollChanged);
+
           data.$placeholder.css('display', '');
           $el.css('position', 'fixed');
 
@@ -237,38 +168,20 @@
           {
             console.log('elements visible, viewport distance + sticky distance applied')
             $el.css('top', maximumTop + 'px');
-            //$el.css('top', data.placeholderDistanceFromBodyTop + realScrolledDistanceFromViewportTop - data.absDistanceFromParentsTop - data.stickyDistanceTop  + 'px');
           }
-
-          //var overflow =
-
-          //console.log('left', data.placeholderDistanceFromBodyLeft, data.absDistanceFromParentsLeft, data.stickyDistanceLeft, data.bodyScrollLeft);
-          //console.log('top', data.placeholderDistanceFromBodyTop, data.absDistanceFromParentsTop, data.stickyDistanceTop, data.bodyScrollTop);
-  //  - data.absDistanceFromParentsTop
-  //        $el.css('top', parentFromBodyTop + viewportScrollTop + 'px'); //- data.bodyScrollTop
-          //$el.css('left', data.placeholderDistanceFromBodyLeft + viewportScrollLeft - (data.absDistanceFromParentsLeft - data.stickyDistanceLeft) - viewportScrollLeft + 'px'); // - data.bodyScrollLeft
-
-          // GOOD:
-          //$el.css('top', data.placeholderDistanceFromBodyTop + viewportScrollTop - (data.absDistanceFromParentsTop - data.stickyDistanceTop)  + 'px'); //- data.bodyScrollTop
-          //$el.css('left', data.placeholderDistanceFromBodyLeft + viewportScrollLeft - (data.absDistanceFromParentsLeft - data.stickyDistanceLeft) - viewportScrollLeft + 'px'); // - data.bodyScrollLeft
 
           $el.css('width', data.fixedWidth);
           $el.css('margin', '0');
 
-          // fix for overflowing when element fixed is out of context
+          // this is a fix for overflowing when element fixed is out of context
           $el.css('overflow', 'hidden');
           if (invisiblePartOfElement > 0)
           {
             $el.css('height', data.$placeholder.outerHeight() - invisiblePartOfElement + 'px'); // - data.stickyDistanceTop
           }
-          //else
-          //{
-          //  $el.css('height', data.fixedHeight + 'px');
-          //}
 
           $el.addClass('stuck');
           data.usingAbsolute = false;
-        }
       }
       data.waitingForUpdate = false;
     }
@@ -276,66 +189,22 @@
     {
       if (!data.usingAbsolute)
       {
-        console.log('resetting position:', 'absolute', viewportScrollTop, data.stickyDistanceTop);
-
+        //console.log('resetting position:', 'absolute', data.stickyDistanceTop);
         $el.removeClass('stuck');
-        //$el.css('position', 'absolute');
         data.$placeholder.css('display', 'none');
-        $el.css('position', 'static');
-        //console.log('returned to normal, absolute');
-        // TODO return to previous values
-        $el.css('top', '');
-        $el.css('left', '');
-        $el.css('width', '');
-        $el.css('margin', '');
-        $el.css('overflow', '');
-        $el.css('height', '');
+        $el.css('position', data.$placeholder.css('position'));
+        //$el.css('position', 'static');
 
-        // update the values from the real thing
-        //placeholderDistanceFromBody = $el.get(0).getBoundingClientRect();
-        //data.placeholderDistanceFromBodyTop = placeholderDistanceFromBody.top;
-        //data.placeholderDistanceFromBodyLeft = placeholderDistanceFromBody.left;
+        $el.css('top', data.$placeholder.css('top'));
+        $el.css('left', data.$placeholder.css('left'));
+        $el.css('width', data.$placeholder.css('width'));
+        $el.css('margin', data.$placeholder.css('margin'));
+        $el.css('overflow', data.$placeholder.css('overflow'));
+        $el.css('height', data.$placeholder.css('height'));
 
         data.usingAbsolute = true;
       }
       data.waitingForUpdate = false;
-    }
-    //console.log('after', data);
-    /*
-    if ($(window).scrollTop() >= data.absDistanceFromParentsTop - data.top) {
-      if (!data.$clone) {
-        data.$clone = $el.clone().css({position: "fixed", top: data.top}).appendTo("body")
-        $el.css("visibility", "hidden")
-        onresize($el)
-      }
-    }
-    else {
-      if (data.$clone) {
-        data.$clone.remove()
-        data.$clone = null
-        $el.css("visibility", "visible")
-      }
-    }
-    */
-  }
-
-
-  /**
-   * TODO: recalc WIDTH according to new size
-   *
-   * Resize event callback
-   * Recalculate the dimensions of the hidden element as
-   * it may have changed. If it has, update the clone
-   */
-  function onresize($el) {
-    var data = $el.data("position:sticky")
-      , offset
-    // Make sure no operations that require a repaint are
-    // done unless a cloned element exists
-    if (data && data.$clone) {
-      offset = $el.offset()
-      data.absDistanceFromParentsTop = offset.top
-      data.$clone.css({left: offset.left, width: $el.width()})
     }
   }
 
