@@ -1,0 +1,67 @@
+
+html {
+  margin: 1em;
+  padding: 1em;
+  border: 15px solid lightcyan;
+}
+body {
+  margin: 1em;
+  padding: 1em;
+  border: 15px solid ghostwhite;
+  font-family: sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+th {
+  font-weight: normal;
+}
+
+figure,
+figcaption,
+section {
+  display: block;
+}
+
+section {
+  border: 1px dashed red;
+}
+
+.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  background: black;
+  background: rgba(0,0,0,0.8);
+  padding: 2em;
+  color: white;
+}
+
+.arrows {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  text-align: center;
+  padding: 0.5em;
+  background: #69A9D3;
+  border-radius: 0.5em;
+  z-index: 5000;
+}
+
+.arrows button {
+  vertical-align: middle;
+}
+
+.clearfix {
+  zoom: 1;
+}
+.clearfix:before,
+.clearfix:after {
+  content: "";
+  display: table;
+}
+.clearfix:after {
+  clear: both;
+}

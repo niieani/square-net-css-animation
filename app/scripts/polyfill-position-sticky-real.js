@@ -1,4 +1,5 @@
 "use strict";
+// http://dev.w3.org/csswg/css-position/#sticky-pos
 
 (function($) {
   // http://stackoverflow.com/questions/4814398/how-can-i-check-if-a-scrollbar-is-visible
@@ -154,7 +155,7 @@
     if (placeholderDistanceFromViewPortTop <= data.stickyDistanceTop)
     {
       // TEMPORARY
-      otherCase = true;
+      //otherCase = true;
       if (data.usingAbsolute || parentScrollChanged || otherCase)
       {
         if (false)
@@ -197,15 +198,18 @@
 
           $el.css('display', '');
 
-          var invisiblePartOfElement = data.$placeholder.outerHeight() - data.$placeholder.get(0).getBoundingClientRect().height;
-          console.log('invisible part', invisiblePartOfElement);
           var visibilityThreshold = realScrolledDistanceFromViewportTop + data.fixedHeight + data.stickyDistanceTop;
           var parentTotalHeight = $el.parent().get(0).scrollHeight;
+          var invisiblePartOfElement = data.$placeholder.outerHeight() + data.stickyDistanceTop - $el.parent().get(0).getBoundingClientRect().height;
+          invisiblePartOfElement = invisiblePartOfElement > 0 ? invisiblePartOfElement : 0;
+          console.log('invisible part', data.$placeholder.outerHeight(), $el.parent().get(0).getBoundingClientRect().height, invisiblePartOfElement);
+
+          var maximumTop = viewportDistanceFromWindowTop + data.stickyDistanceTop;
 
           // FIXME
           // total height
           //if (visibilityThreshold > $el.parent().get(0).getBoundingClientRect().height)
-          if (visibilityThreshold > parentTotalHeight)
+          if (visibilityThreshold > parentTotalHeight && $el.parent().get(0) !== data.$viewport.get(0))
           //if (visibilityThreshold > $el.parent().innerHeight())
           {
             if (visibilityThreshold - parentTotalHeight > data.fixedHeight + data.stickyDistanceTop)
@@ -217,7 +221,7 @@
             else
             {
               console.log('visibility threshold approaching');
-              // TODO: substract padding
+              // TODO: substract padding?
               $el.css('top', viewportDistanceFromWindowTop + parentTotalHeight - realScrolledDistanceFromViewportTop - data.fixedHeight + 'px');
               /*
               console.log('viewportDistanceFromWindowTop', viewportDistanceFromWindowTop);
@@ -232,7 +236,7 @@
           else
           {
             console.log('elements visible, viewport distance + sticky distance applied')
-            $el.css('top', viewportDistanceFromWindowTop + data.stickyDistanceTop + 'px');
+            $el.css('top', maximumTop + 'px');
             //$el.css('top', data.placeholderDistanceFromBodyTop + realScrolledDistanceFromViewportTop - data.absDistanceFromParentsTop - data.stickyDistanceTop  + 'px');
           }
 
@@ -253,9 +257,14 @@
 
           // fix for overflowing when element fixed is out of context
           $el.css('overflow', 'hidden');
-          //$el.css('height', data.$placeholder.outerHeight() - data.stickyDistanceTop + 'px');
-          //var overflow = viewportScrollTop +
-          $el.css('height', data.fixedHeight + 'px');
+          if (invisiblePartOfElement > 0)
+          {
+            $el.css('height', data.$placeholder.outerHeight() - invisiblePartOfElement + 'px'); // - data.stickyDistanceTop
+          }
+          //else
+          //{
+          //  $el.css('height', data.fixedHeight + 'px');
+          //}
 
           $el.addClass('stuck');
           data.usingAbsolute = false;
