@@ -26,53 +26,36 @@
     <link rel="canonical" href="http://www.example.com/">
     -->
 
-    <link rel="stylesheet" href="styles/invent.css">
+    <link rel="stylesheet" href="styles/slider.css">
   </head>
   <body>
-      <header class="app-bar promote-layer">
-        <div class="app-bar-container">
-          <button class="menu"><img src="images/hamburger.svg" alt="Menu"></button>
-          <h1 class="logo">invent.<strong>life</strong></h1>
 
-          <!--<section class="app-bar-actions">-->
-            <!--<button><i class="icon icon-star"></i></button>-->
-          <!--</section>-->
-        </div>
-
-        <nav class="navdrawer-container promote-layer">
-          <!--<h4>Navigation</h4>-->
-          <ul>
-            <li><a href="#hello">hello</a></li>
-            <li><a href="#get-started">works</a></li>
-            <li><a href="#writing">writing</a></li>
-            <li><a href="#writing">art</a></li>
-            <li><a href="#writing">artlab</a></li>
-            <li><a href="#writing">snippets</a></li>
-            <li><a href="#writing">caféctivity</a></li>
-          </ul>
-        </nav>
-      </header>
-
-      <main class="content hello">
-        <button data-icon="f" class="icon prev"></button>
-        <article class="text">
-          <h1>Hello. I'm Bazyli.</h1>
-          <!--<p>I am an <strong>inventor</strong> who's passionate about revolutionizing the ways we interact with technology.</p>-->
-        </article>
-        <button data-icon="g" class="icon next"></button>
-      </main>
-
-      <div class="space-after-content">
-        <!--<div class="life-tree"></div>-->
-      </div>
-
+  <div class="sections">
+    <div class="container previous-or-first">
+      <section class="red card">Welcome to Red Kingdom.</section>
+    </div>
+    <div class="container current-or-second pass-through">
+      <section class="blue pulling card">Welcome to Blue Kingdom.</section>
+    </div>
+    <div class="container next pass-through">
+      <section class="pink pulling card">Welcome to Pink Kingdom.</section>
+    </div>
+    <!--<div class="filler"></div>-->
+  </div>
     <!--<script src="scripts/vendor/move.min.js"></script>-->
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <!--<script src="scripts/vendor/position-sticky.js"></script>-->
+    <!--<script src="//rawgithub.com/briangonzalez/jquery.pep.js/master/src/jquery.pep.js"></script>-->
+
+  <script src="scripts/vendor/polyfill.js"></script>
+  <script src="scripts/polyfill-position-sticky-real.js"></script>
 
     <script src="scripts/vendor/Promise.js"></script>
     <script src="scripts/vendor/browser-polyfill.js"></script>
     <script src="scripts/vendor/runtime.js"></script>
-    <!-- build:js scripts/main.js -->
-    <script src="scripts/main.js"></script>
+    <!-- build:js scripts/slider.js -->
+    <!--<script src="scripts/slider.js"></script>-->
     <!-- endbuild -->
     <!-- build:js scripts/lifetree.js -->
     <!--<script src="scripts/lifetree.js"></script>-->
