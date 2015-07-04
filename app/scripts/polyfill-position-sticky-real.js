@@ -46,6 +46,9 @@
     if (!data.waitingForUpdate || parentScrollTrigger) {
 
       data.waitingForUpdate = true;
+      setPositions($el, parentScrollTrigger);
+
+      //data.waitingForUpdate = false;
       // Don’t update until next animation frame if we can, otherwise use a
       // timeout - either will help avoid too many repaints
       if (requestAnimationFrame) {
@@ -53,8 +56,9 @@
       }
       else {
         // TODO: replace with real shim
-        setTimeout(function(){setPositions($el)}, 15);
+        setTimeout(function(){setPositions($el, parentScrollTrigger)}, 15);
       }
+
     }
   }
 
@@ -67,35 +71,34 @@
    * position:fixed and its default position value
    */
   function setPositions($el, parentScrollChanged) {
-    console.log($el.get(0).classList);
+    //console.log($el.get(0).classList);
 
-    var data = $el.data("position:sticky")
-    if (!data) return
-
-    var placeholderDistanceFromBody;
+    var data = $el.data("position:sticky");
+    if (!data) return;
 
     // TODO: is this needed?
     // var otherCase = viewportScrollLeft >= data.absDistanceFromParentsLeft - data.stickyDistanceLeft;
     var otherCase = false;
-    // TODO: add data.$viewport.position().left
-    // TODO: make data.absDistanceFromParentsTop dynamic via the placeholder item
+
     // Fix for <HTML> with margin
     var viewportDistanceFromWindowTop = data.$viewport.get(0) === document.body ? 0 : data.$viewport.get(0).getBoundingClientRect().top;
+    // TODO: left ?
+    var viewportDistanceFromWindowLeft = data.$viewport.get(0) === document.body ? 0 : data.$viewport.get(0).getBoundingClientRect().left;
+
     var parentDistanceFromWindowTop = $el.parent().get(0).getBoundingClientRect().top;
+    // fetch the position of the placeholder
     var placeholderDistanceFromWindowTop = data.usingAbsolute ? $el.get(0).getBoundingClientRect().top : data.$placeholder.get(0).getBoundingClientRect().top;
-    var placeholderDistanceFromParentTop = placeholderDistanceFromWindowTop - parentDistanceFromWindowTop;
+    //var placeholderDistanceFromParentTop = placeholderDistanceFromWindowTop - parentDistanceFromWindowTop;
     var placeholderDistanceFromViewPortTop = placeholderDistanceFromWindowTop - viewportDistanceFromWindowTop;
 
     var realScrolledDistanceFromViewportTop;
     if (data.$viewport.get(0) === document.body)
     {
-      //console.log('from body');
-      realScrolledDistanceFromViewportTop = -parentDistanceFromWindowTop;
       // TODO: add check for scrollbar on 'Y-axis'
+      realScrolledDistanceFromViewportTop = -parentDistanceFromWindowTop;
     }
     else
     {
-      //console.log('from viewport')
       realScrolledDistanceFromViewportTop = data.$viewport.scrollTop();
     }
 
@@ -109,79 +112,81 @@
     {
       if (data.usingAbsolute || parentScrollChanged || otherCase)
       {
-          //console.log('setting position:', 'stuck', viewportScrollTop, data.stickyDistanceTop, 'parent changed?', parentScrollChanged);
+        //console.log('setting position:', 'stuck', viewportScrollTop, data.stickyDistanceTop, 'parent changed?', parentScrollChanged);
 
-          data.$placeholder.css('display', '');
-          $el.css('position', 'fixed');
+        data.$placeholder.css('display', '');
+        $el.css('position', 'fixed');
 
-          // fetch the position of the placeholder
-          placeholderDistanceFromBody = data.$placeholder.get(0).getBoundingClientRect();
-          data.placeholderDistanceFromBodyTop = placeholderDistanceFromBody.top;
-          data.placeholderDistanceFromBodyLeft = placeholderDistanceFromBody.left;
-          var parentDistanceFromBody = $el.parent().get(0).getBoundingClientRect();
-          data.absDistanceFromParentsLeft = placeholderDistanceFromBody.left - parentDistanceFromBody.left;
-          data.absDistanceFromParentsTop = placeholderDistanceFromBody.top - parentDistanceFromBody.top;
+        var placeholderOuterHeight = data.$placeholder.outerHeight();
+        var placeholderOuterWidth = data.$placeholder.outerWidth();
 
-          data.fixedHeight = data.$placeholder.outerHeight();
-          data.fixedWidth = data.$placeholder.outerWidth();
+        $el.css('display', '');
 
-          //console.log(realScrolledDistanceFromViewportTop, viewportScrollTop, data.absDistanceFromParentsTop, realScrolledDistanceFromViewportTop - data.fixedHeight - data.absDistanceFromParentsTop - data.stickyDistanceTop);
+        var visibilityThreshold = realScrolledDistanceFromViewportTop + placeholderOuterHeight + data.stickyDistanceTop;
+        var parentTotalHeight = $el.parent().get(0).scrollHeight;
+        var invisiblePartOfElement = data.$placeholder.outerHeight() + data.stickyDistanceTop - $el.parent().get(0).getBoundingClientRect().height;
+        invisiblePartOfElement = invisiblePartOfElement > 0 ? invisiblePartOfElement : 0;
 
-          $el.css('display', '');
+        var maximumTop = viewportDistanceFromWindowTop + data.stickyDistanceTop;
 
-          var visibilityThreshold = realScrolledDistanceFromViewportTop + data.fixedHeight + data.stickyDistanceTop;
-          var parentTotalHeight = $el.parent().get(0).scrollHeight;
-          var invisiblePartOfElement = data.$placeholder.outerHeight() + data.stickyDistanceTop - $el.parent().get(0).getBoundingClientRect().height;
-          invisiblePartOfElement = invisiblePartOfElement > 0 ? invisiblePartOfElement : 0;
-          console.log('invisible part', data.$placeholder.outerHeight(), $el.parent().get(0).getBoundingClientRect().height, invisiblePartOfElement);
-
-          var maximumTop = viewportDistanceFromWindowTop + data.stickyDistanceTop;
-
-          // FIXME
-          // total height
-          //if (visibilityThreshold > $el.parent().get(0).getBoundingClientRect().height)
-          if (visibilityThreshold > parentTotalHeight && $el.parent().get(0) !== data.$viewport.get(0))
-          //if (visibilityThreshold > $el.parent().innerHeight())
+        // FIXME
+        // total height
+        if (visibilityThreshold > parentTotalHeight && $el.parent().get(0) !== data.$viewport.get(0))
+        {
+          if (visibilityThreshold - parentTotalHeight > placeholderOuterHeight + data.stickyDistanceTop)
           {
-            if (visibilityThreshold - parentTotalHeight > data.fixedHeight + data.stickyDistanceTop)
-            {
-              console.log('visibility threshold passed');
-              $el.css('display', 'none');
-              //$el.css('top', '');
-            }
-            else
-            {
-              console.log('visibility threshold approaching');
-              // TODO: substract padding?
-              $el.css('top', viewportDistanceFromWindowTop + parentTotalHeight - realScrolledDistanceFromViewportTop - data.fixedHeight + 'px');
-              /*
-              console.log('viewportDistanceFromWindowTop', viewportDistanceFromWindowTop);
-              //console.log('$el.parent().innerHeight()', $el.parent().innerHeight());
-              console.log('realScrolledDistanceFromViewportTop', realScrolledDistanceFromViewportTop);
-              console.log('data.fixedHeight', data.fixedHeight);
-              console.log('parentTotalHeight', parentTotalHeight);
-              console.log('visibilityThreshold', visibilityThreshold);
-              */
-            }
+            console.log('visibility threshold passed');
+            $el.css('display', 'none');
+            //$el.css('top', '');
           }
           else
           {
-            console.log('elements visible, viewport distance + sticky distance applied')
-            $el.css('top', maximumTop + 'px');
+            console.log('visibility threshold approaching');
+            // TODO: substract padding?
+            $el.css('top', viewportDistanceFromWindowTop + parentTotalHeight - realScrolledDistanceFromViewportTop - placeholderOuterHeight + 'px');
           }
+        }
+        else
+        {
+          //console.log('elements visible, viewport distance + sticky distance applied')
+          $el.css('top', maximumTop + 'px');
+        }
 
-          $el.css('width', data.fixedWidth);
-          $el.css('margin', '0');
+        // TODO: left ?
+        //$el.css('left', viewportDistanceFromWindowLeft + data.stickyDistanceLeft);
+        //$el.css('left', viewportDistanceFromWindowLeft + 'px');
 
-          // this is a fix for overflowing when element fixed is out of context
-          $el.css('overflow', 'hidden');
-          if (invisiblePartOfElement > 0)
-          {
-            $el.css('height', data.$placeholder.outerHeight() - invisiblePartOfElement + 'px'); // - data.stickyDistanceTop
-          }
 
-          $el.addClass('stuck');
-          data.usingAbsolute = false;
+        var $body = $(document.html);
+        var bodyMarginLeft = parseInt($body.css('margin-left')) + parseInt($body.css('padding-left')) + parseInt($body.css('border-left-width'));
+        var thisMarginLeft = parseInt(data.$placeholder.css('margin-left')) + parseInt(data.$placeholder.css('padding-left')) + parseInt(data.$placeholder.css('border-left-width'));
+        var bodyMarginRight = parseInt($body.css('margin-right')) + parseInt($body.css('padding-right')) + parseInt($body.css('border-right-width'));
+        $el.css('left', data.$placeholder.offset().left + bodyMarginLeft + bodyMarginRight + thisMarginLeft + 'px');
+
+        // outerWidth() / width() ?
+        $el.css('width', data.$placeholder.outerWidth() + 'px');
+        //var marginLeft = parseInt(data.$placeholder.css('margin-left'));
+        //var marginRight = parseInt(data.$placeholder.css('margin-right'));
+        //var thisWidth = parseInt(data.$placeholder.css('width'));
+        //var thisWidth = data.$placeholder.outerWidth() - parseInt(data.$placeholder.css('padding-left')) - parseInt(data.$placeholder.css('border-left-width')) - parseInt(data.$placeholder.css('padding-right')) - parseInt(data.$placeholder.css('border-right-width'));
+        //var thisWidth = data.$placeholder.width() + parseInt(data.$placeholder.css('margin-left')) + parseInt(data.$placeholder.css('margin-right'));
+        //$el.css('width', thisWidth + marginLeft + marginRight + 'px');
+        //console.log(thisWidth);
+        //$el.css('width', thisWidth + 'px');
+        //$el.css('width', 300 + 'px');
+        $el.css('margin', '0');
+
+        // this is a fix for overflowing when element fixed is out of context
+        $el.css('overflow', 'hidden');
+
+        // TODO: should this be .height() or .outer .innerHeight()?
+        if (invisiblePartOfElement > 0)
+        {
+          $el.css('height', data.$placeholder.height() - invisiblePartOfElement + 'px'); // - data.stickyDistanceTop
+        }
+
+        $el.addClass('stuck');
+        data.usingAbsolute = false;
       }
       data.waitingForUpdate = false;
     }
@@ -192,15 +197,15 @@
         //console.log('resetting position:', 'absolute', data.stickyDistanceTop);
         $el.removeClass('stuck');
         data.$placeholder.css('display', 'none');
-        $el.css('position', data.$placeholder.css('position'));
-        //$el.css('position', 'static');
 
-        $el.css('top', data.$placeholder.css('top'));
-        $el.css('left', data.$placeholder.css('left'));
-        $el.css('width', data.$placeholder.css('width'));
-        $el.css('margin', data.$placeholder.css('margin'));
-        $el.css('overflow', data.$placeholder.css('overflow'));
-        $el.css('height', data.$placeholder.css('height'));
+        $el.css('position', data.originalCss.position);
+        //$el.css('position', 'static');
+        $el.css('top', data.originalCss.top);
+        $el.css('left', data.originalCss.left);
+        $el.css('width', data.originalCss.width);
+        $el.css('margin', data.originalCss.margin);
+        $el.css('overflow', data.originalCss.overflow);
+        $el.css('height', data.originalCss.height);
 
         data.usingAbsolute = true;
       }
@@ -214,14 +219,20 @@
     window.mozRequestAnimationFrame;
 
   // HACK: enable scrolling with touch on Chrome/WebKit/WebView
-  function onTouchMove(e, data){
+  function onTouchMove($el){
+    var data = $el.data("position:sticky");
+    if (!data) return;
+
     if (data.pointerEventsEnabled)
     {
       data.pointerEventsEnabled = false;
       polyfilledElements[data.id].css('pointer-events', 'none');
     }
   }
-  function onTouchEnd(e, data){
+  function onTouchEnd($el){
+    var data = $el.data("position:sticky");
+    if (!data) return;
+
     polyfilledElements[data.id].css('pointer-events', ''); // restore defaults
     data.pointerEventsEnabled = true;
   }
@@ -235,19 +246,6 @@
     return false;
     //});
   }
-
-  // http://stackoverflow.com/questions/8079187/how-to-calculate-the-width-of-the-scroll-bar
-  function updateAbsoluteValues($el){
-    var data = $el.data("position:sticky");
-
-    if (data) {
-      //data.$placeholder
-      var realAbsoluteValues = $el.get(0).getBoundingClientRect();
-      data.placeholderDistanceFromBodyTop = realAbsoluteValues.top;
-      data.placeholderDistanceFromBodyLeft = realAbsoluteValues.left;
-    }
-  }
-
 
   function getScrollBarWidth () {
     var $outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body'),
@@ -294,7 +292,7 @@
 
     rules.each(function(rule) {
       var $elements = $(rule.getSelectors())
-        , declaration = rule.getDeclaration()
+        , declaration = rule.getDeclaration();
       $elements.each(function() {
         var $this = $(this)
           , data = $this.data("position:sticky");
@@ -313,20 +311,34 @@
           data = {
             id: ++uniqueID,
             pointerEventsEnabled: true,
-            //parentScrollChanged: true,
-            //absDistanceFromParentsTop: $this.offset().top,
-            absDistanceFromParentsTop: $this.position().top,
-            absDistanceFromParentsLeft: $this.position().left,
             stickyDistanceTop: stickyDistanceTop >= 0 ? stickyDistanceTop : 0,
             stickyDistanceLeft: stickyDistanceLeft >= 0 ? stickyDistanceLeft : 0,
             usingAbsolute: true,
             waitingForUpdate: false,
-            // TODO: according to spec. this should be the nearest ancestor with a scrolling box, not parent
-            $viewport: findClosestParentWithScrollbar($this)
-            // $this.parent()
-          }
+            // according to spec. this should be the nearest ancestor with a scrolling box, not parent or body
+            $viewport: findClosestParentWithScrollbar($this),
+            //originalCss: {
+            //  top: $this.css('top'),
+            //  left: $this.css('left'),
+            //  width: $this.css('width'),
+            //  height: $this.css('height'),
+            //  visibility: $this.css('visibility'),
+            //  margin: $this.css('margin'),
+            //  overflow: $this.css('overflow'),
+            //  position: $this.css('position')
+            //}
+            originalCss: {
+              top: '',
+              left: '',
+              width: '',
+              height: '',
+              visibility: '',
+              margin: '',
+              overflow: '',
+              position: ''
+            }
+          };
           // generate placeholder
-
           /*
           // version without deep cloning:
 
@@ -345,8 +357,6 @@
           polyfilledElements[uniqueID] = $this;
         }
 
-        updateAbsoluteValues($this);
-        console.log(data);
         triggerChange($this, true);
         var $window = $(window);
         $window.on("scroll.position:sticky:" + data.id, function() { triggerChange($this, true) })
@@ -357,10 +367,10 @@
           data.$viewport.on("scroll.position:sticky:" + data.id, function() { triggerChange($this, false) })
 
           // HACK: enable scrolling with touch on Chrome/WebKit/WebView
-          data.$viewport.on("touchmove.position:sticky:" + data.id, function(e) { onTouchMove(e, data) })
-          data.$viewport.on(['touchend', 'touchcancel', 'touchleave', ''].join('.position:sticky:' + data.id + ' '), function(e) { onTouchEnd(e, data) })
+          data.$viewport.on("touchmove.position:sticky:" + data.id, function(e) { onTouchMove($this) })
+          data.$viewport.on(['touchend', 'touchcancel', 'touchleave', ''].join('.position:sticky:' + data.id + ' '), function(e) { onTouchEnd($this) })
 
-          //apply to parent:
+          // apply to parent:
           if (window.navigator.userAgent.indexOf('MSIE ') == -1 && window.navigator.userAgent.indexOf('Trident/') == -1)
           {
             $this.on('wheel.position:sticky:" + data.id', function(e){ onWheel(e, data) });
@@ -371,6 +381,7 @@
   }
 
   function undoUnmatched(rules) {
+    // TODO:
     rules.each(function(rule) {
       var $elements = $(rule.getSelectors())
       $elements.each(function() {
