@@ -1,0 +1,44 @@
+$tree-line-thickness: 2px;
+
+.life-tree {
+  position: fixed;
+  overflow: hidden;
+}
+
+.line {
+  transition: all 0.7s ease-out;
+  position: absolute;
+  display: block;
+
+  &.color-dark-blue {
+    background-color: rgba(darken($accent-color-a, 20), 0.15);
+  }
+
+  &.color-red {
+    background-color: rgba(#F04895, 0.5);
+  }
+
+  &.color-violet {
+    background-color: rgba(#8666F0, 0.5);
+  }
+
+  &.fade-out {
+    transition: all 1s ease-out !important;
+    background-color: rgba(white, 0) !important;
+  }
+
+  &.horizontal {
+    height: $tree-line-thickness;
+    width: 0;
+    &.fade-out {
+      width: 0 !important;
+    }
+  }
+  &.vertical {
+    height: 0;
+    width: $tree-line-thickness;
+    &.fade-out {
+      height: 0 !important;
+    }
+  }
+}

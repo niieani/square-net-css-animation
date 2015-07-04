@@ -82,8 +82,12 @@ class TreeVerticalNode extends TreeNode {
   }
   extendLine(withoutThickness) {
     super.extendLine(withoutThickness);
-    let line = this;
-    line.lineElement.style.height = this.size + 'px';
+    //let line = this;
+    //line.lineElement.style.height = this.size + 'px';
+    if (this.lineElement !== null)
+      this.lineElement.style.height = this.size + 'px';
+    else
+      console.log("interesting case", this);
   }
   get lastY() {
     return (this.initialY + this.size) * this.reversalMultiplier;
@@ -125,8 +129,12 @@ class TreeHorizontalNode extends TreeNode {
   }
   extendLine(withoutThickness) {
     super.extendLine(withoutThickness);
-    let line = this;
-    line.lineElement.style.width = this.size + 'px';
+    //let line = this;
+    //line.lineElement.style.width = this.size + 'px';
+    if (this.lineElement !== null)
+      this.lineElement.style.width = this.size + 'px';
+    else
+      console.log("interesting case", this);
   }
   get lastY() {
     return this.initialY;
@@ -303,8 +311,10 @@ class TreeLine {
 
     while (treeLine.nodes.length < treeLine.iterations && treeLine.killSwitch === false) {
 
-      if (treeLine.fadeThreshold >= 0 && treeLine.nodes.length === treeLine.fadeThreshold)
+      if (treeLine.nodes.length > 1 && treeLine.fadeThreshold >= 0 && treeLine.nodes.length === treeLine.fadeThreshold)
+      {
         treeLine.startFadingAtNode(0);
+      }
 
       await timeout(treeLine.interval);
       node.extendLine(false);
@@ -323,36 +333,111 @@ class TreeLine {
     }
   }
   async startFadingAtNode(nodeNum) {
+    // console.log("fading?", this.nodes.length-1, nodeNum+1);
     let treeLine = this;
+
     treeLine.startedFading = true;
 
     let nodeToDestroy = treeLine.nodes[nodeNum];
+
+    if (nodeToDestroy === null)
+    {
+      console.log("node already destroyed, current count:", nodeNum, treeLine.nodes.length)
+      return;
+    }
+
     let elementToDestroy = nodeToDestroy.lineElement;
     elementToDestroy.className += " fade-out";
+
+    await timeout(treeLine.interval * 2);
+
+    if (this.nodes.length-1 >= nodeNum+1)
+    {
+      treeLine.startFadingAtNode(nodeNum+1);
+    }
+    // TODO:
+    else if (this.killSwitch === true && this.nodes.length === 0) // all lines removed, finally remove the tree div:
+    {
+      setTimeout(function(){
+        treeLine.treeElement.parentNode.removeChild(treeLine.treeElement);
+        // GC
+        treeLine.treeElement = null;
+      }, treeLine.interval * 10);
+    }
+    // else
+    // {
+    //   treeLine.startFadingAtNode(nodeNum);
+    // }
 
     setTimeout(function(){
       elementToDestroy.parentNode.removeChild(elementToDestroy);
       // GC
       treeLine.nodes[nodeNum].lineElement = null;
       treeLine.nodes[nodeNum] = null;
-    }, 1000);
+      //treeLine.nodes.splice(nodeNum, 1);
+    }, treeLine.interval * 10);
+  }
+}
 
-    await timeout(300);
-    if (this.nodes.length-1 >= nodeNum+1)
+class TreeBuilder
+{
+  // querySelector = document.querySelector.bind(document);
+  // querySelectorAll = document.querySelectorAll.bind(document);
+  // body = document.body;
+  builtObjects = [];
+
+  constructor(objectToBuildOn, colorsToBuild = ['color-dark-blue'], avoid = [])
+  {
+    let rect = objectToBuildOn.getBoundingClientRect();
+    let extendBy = 100;
+
+    for (let color of colorsToBuild)
     {
-      treeLine.startFadingAtNode(nodeNum+1);
+      var hoverTree = document.createElement('div');
+      hoverTree.className += " life-tree";
+      var hoverTreeWidth = Math.round(rect.right - rect.left) + (extendBy*2);
+      //var hoverTreeHeight = 60;
+      var hoverTreeHeight = Math.round(rect.bottom - rect.top) + (extendBy*2);
+      //hoverTree.style.top = Math.round(rect.bottom)-10 + "px";
+      hoverTree.style.top = Math.round(rect.top) - extendBy + "px";
+      //hoverTree.style.top = 30 + "px";
+      hoverTree.style.left = Math.round(rect.left) - extendBy + "px";
+      hoverTree.style.width = hoverTreeWidth + "px";
+      hoverTree.style.height = hoverTreeHeight + "px";
+      hoverTree.style.zIndex = -1;
+      document.body.appendChild(hoverTree);
+
+      let treeLine = new TreeLine(
+        hoverTree, // div
+        20, // extend size
+        Math.round(hoverTreeWidth/2), // startX
+        Math.round(hoverTreeHeight/2), // start Y
+        //0, // startX
+        //0, // start Y
+        hoverTreeWidth, // boundaryX
+        hoverTreeHeight, // boundaryY
+        5500, // iterations
+        10,  // interation fade treshold, -1 off
+        // 'color-red',  // classes
+        // 'color-dark-blue',  // classes
+        color,
+        100, // interval
+        //['down', 'down', 'up', 'left', 'right'], // probability of directions
+        ['down', 'up', 'left', 'right'], // probability of directions
+        'down', // first
+        avoid
+        // [
+          // {
+          //   element: this,
+          //   allowMargin: true,
+          //   allowPadding: true,
+          //   allowBorder: true
+          // }
+        // ]
+      );
+      this.builtObjects.push(treeLine);
     }
-    /*
-    // TODO:
-    else // all lines removed, finally remove the tree div:
-    {
-      setTimeout(function(){
-        treeLine.treeElement.parentNode.removeChild(treeLine.treeElement);
-        // GC
-        treeLine.treeElement = null;
-      }, 1000);
-    }
-    */
+
   }
 }
 
@@ -363,16 +448,27 @@ class TreeLine {
   var querySelectorAll = document.querySelectorAll.bind(document);
 
   var body = document.body;
-  /*
-  // LIFE TREE
-  var lifeTree = querySelector('.life-tree');
-  //var lifeTree = querySelector('body');
-  // (lifeTree, extendBy = 20, startX = 0, startY = 0, boundaryX = null, boundaryY = null, iterations = 60, fadeThreshold = 30, classes = '', interval = 300, directions = ['down', 'left', 'right'], startDirection = 'down')
-  var treeLine = new TreeLine(lifeTree, 20, -18, 0, 400, 400, 100, 20, 'color-dark-blue', 100, ['down', 'up', 'left', 'left', 'right'], 'down');
-  var treeLine2 = new TreeLine(lifeTree, 20, 0, 0, 400, 400, 100, 20, 'color-red', 100, ['down', 'down', 'up', 'left', 'right'], 'down');
-  var treeLine3 = new TreeLine(lifeTree, 20, 18, 0, 400, 400, 100, 20, 'color-violet', 100, ['down', 'up', 'left', 'right', 'right'], 'down');
-  */
 
+  let avoid = Array.prototype.slice.call(querySelectorAll('nav')).concat(Array.prototype.slice.call(querySelectorAll('button'))).concat(Array.prototype.slice.call(querySelectorAll('h1')));
+
+  let avoidArray = avoid.map(function(element){
+    return {
+      element: element,
+      allowMargin: true,
+      allowPadding: true,
+      allowBorder: true
+    };
+  });
+  // LIFE TREE
+  var lifeTree = new TreeBuilder(querySelector('.content'), ['color-dark-blue', 'color-red', 'color-violet'], avoidArray);
+
+  // var lifeTree = querySelector('body');
+  // (lifeTree, extendBy = 20, startX = 0, startY = 0, boundaryX = null, boundaryY = null, iterations = 60, fadeThreshold = 30, classes = '', interval = 300, directions = ['down', 'left', 'right'], startDirection = 'down')
+  // var treeLine = new TreeLine(lifeTree, 20, -18, 0, 400, 400, 100, 20, 'color-dark-blue', 100, ['down', 'up', 'left', 'left', 'right'], 'down');
+  // var treeLine2 = new TreeLine(lifeTree, 20, 0, 0, 400, 400, 100, 20, 'color-red', 100, ['down', 'down', 'up', 'left', 'right'], 'down');
+  // var treeLine3 = new TreeLine(lifeTree, 20, 18, 0, 400, 400, 100, 20, 'color-violet', 100, ['down', 'up', 'left', 'right', 'right'], 'down');
+  
+  /*
   let avoid = Array.prototype.slice.call(querySelectorAll('nav')).concat(Array.prototype.slice.call(querySelectorAll('button'))).concat(Array.prototype.slice.call(querySelectorAll('h1')));
   console.log(avoid);
 
@@ -399,7 +495,8 @@ class TreeLine {
   lifeTree.style.height = lifeTreeHeight + "px";
   lifeTree.style.zIndex = -1;
   body.appendChild(lifeTree);
-
+  */
+/*
   let treeLine = new TreeLine(
     lifeTree, // div
     20, // extend size
@@ -439,6 +536,7 @@ class TreeLine {
     'down', // first
     avoidArray
   );
+*/
   /*
   let treeLine3 = new TreeLine(
     hoverTree, // div
@@ -459,14 +557,25 @@ class TreeLine {
     avoidArray
   );
   */
+/*
+  let avoid = Array.prototype.slice.call(querySelectorAll('nav')).concat(Array.prototype.slice.call(querySelectorAll('button'))).concat(Array.prototype.slice.call(querySelectorAll('h1')));
+  console.log(avoid);
 
-  /*
-  //var targets = querySelectorAll('.navdrawer-container a');
-  var targets = querySelectorAll('.hello');
-  var helloText = querySelector('.hello h1');
-  //for (var target of targets) // TODO
-  for (let i = 0; i < targets.length; ++i) {
-    let target = targets[i];
+  let avoidArray = avoid.map(function(element){
+    return {
+      element: element,
+      allowMargin: true,
+      allowPadding: true,
+      allowBorder: true
+    };
+  });
+*/
+  // var targets = Array.prototype.slice.call(querySelectorAll('.hello')).concat(Array.prototype.slice.call(querySelectorAll('.navdrawer-container a')));
+  var targets = querySelectorAll('.navdrawer-container a');
+  // var helloText = querySelector('.hello h1');
+  for (let target of targets) { // TODO
+  // for (let i = 0; i < targets.length; ++i) {
+    // let target = targets[i];
     target.addEventListener("mouseover", function(){
       var rect = this.getBoundingClientRect();
 
@@ -489,7 +598,7 @@ class TreeLine {
         hoverTree, // div
         20, // extend size
         Math.round(hoverTreeWidth/2), // startX
-        Math.round(hoverTreeHeight/2), // start Y
+        Math.round(hoverTreeHeight/2) + 6, // start Y
         //0, // startX
         //0, // start Y
         hoverTreeWidth, // boundaryX
@@ -498,13 +607,13 @@ class TreeLine {
         1,  // interation fade treshold, -1 off
         //'color-red',  // classes
         'color-dark-blue',  // classes
-        500, // interval
+        100, // interval
         //['down', 'down', 'up', 'left', 'right'], // probability of directions
         ['down', 'up', 'left', 'right'], // probability of directions
         'down', // first
         [
           {
-            element: helloText,
+            element: this,
             allowMargin: true,
             allowPadding: true,
             allowBorder: true
@@ -518,6 +627,5 @@ class TreeLine {
       //console.log(rect.top, rect.right, rect.bottom, rect.left);
     });
   }
-  */
 
 })();
