@@ -198,7 +198,7 @@ gulp.task('copy-runtimes', () => {
 });
 
 // Watch files for changes & reload
-gulp.task('serve:dev', ['copy-runtimes', 'html:dev', 'babel', 'styles'], () => {
+gulp.task('serve:dev', ['copy-runtimes', 'scripts', 'html:dev', 'babel', 'styles'], () => {
   browserSync({
     notify: false,
     // Customize the BrowserSync console logging prefix

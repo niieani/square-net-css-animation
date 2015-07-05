@@ -19,7 +19,7 @@
     };
   });
   // LIFE TREE
-  var lifeTree = new TreeBuilder(querySelector('.content'), ['color-dark-blue', 'color-red', 'color-violet'], avoidArray);
+  var lifeTree = new TreeBuilder(querySelector('main'), ['color-dark-blue', 'color-red', 'color-violet'], avoidArray);
 
   // var lifeTree = querySelector('body');
   // (lifeTree, extendBy = 20, startX = 0, startY = 0, boundaryX = null, boundaryY = null, iterations = 60, fadeThreshold = 30, classes = '', interval = 300, directions = ['down', 'left', 'right'], startDirection = 'down')
