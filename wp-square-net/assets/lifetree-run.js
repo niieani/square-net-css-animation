@@ -23,7 +23,7 @@
 
   // var targets = Array.prototype.slice.call(querySelectorAll('.hello')).concat(Array.prototype.slice.call(querySelectorAll('.navdrawer-container a')));
   var targets = querySelectorAll("#top-menu-nav a");
-  // var helloText = querySelector('.hello h1');
+  var header = querySelector('#main-header');
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;
@@ -37,17 +37,18 @@
       target.addEventListener("mouseover", function () {
         var rect = this.getBoundingClientRect();
 
-        var extendBy = 100;
+        var extendByHeight = 100;
+        var extendByWidth = 200;
 
         var hoverTree = document.createElement("div");
         hoverTree.className += " life-tree hover-tree";
-        var hoverTreeWidth = Math.round(rect.right - rect.left) + extendBy * 2;
+        var hoverTreeWidth = Math.round(rect.right - rect.left) + extendByWidth * 2;
         //var hoverTreeHeight = 60;
-        var hoverTreeHeight = Math.round(rect.bottom - rect.top) + extendBy * 2;
+        var hoverTreeHeight = Math.round(rect.bottom - rect.top) + extendByHeight * 2;
         //hoverTree.style.top = Math.round(rect.bottom)-10 + "px";
-        hoverTree.style.top = Math.round(rect.top) - extendBy + "px";
+        hoverTree.style.top = Math.round(rect.top) - extendByHeight + "px";
         //hoverTree.style.top = 30 + "px";
-        hoverTree.style.left = Math.round(rect.left) - extendBy + "px";
+        hoverTree.style.left = Math.round(rect.left) - extendByWidth + "px";
         hoverTree.style.width = hoverTreeWidth + "px";
         hoverTree.style.height = hoverTreeHeight + "px";
         //hoverTree.style.zIndex = -1;
@@ -55,16 +56,14 @@
         var treeLine = new TreeLine(hoverTree, // div
         20, // extend size
         Math.round(hoverTreeWidth / 2), // startX
-        Math.round(hoverTreeHeight / 2) + 6, // start Y
-        //0, // startX
-        //0, // start Y
+        Math.round(hoverTreeHeight / 2) + 15, // start Y
         hoverTreeWidth, // boundaryX
         hoverTreeHeight, // boundaryY
-        55, // iterations
+        5500, // iterations
         1, // interation fade treshold, -1 off
         //'color-red',  // classes
         "color-dark-blue", // classes
-        100, // interval
+        20, // interval
         //['down', 'down', 'up', 'left', 'right'], // probability of directions
         ["down", "up", "left", "right"], // probability of directions
         "down", // first
@@ -73,9 +72,18 @@
           allowMargin: true,
           allowPadding: true,
           allowBorder: true
-        }]);
+        },
+        {
+          element: header,
+          allowMargin: true,
+          allowPadding: true,
+          allowBorder: true
+        }
+        ]);
         target.addEventListener("mouseout", function () {
           treeLine.killSwitch = true;
+          if (treeLine.startedFading === false)
+            treeLine.startFadingAtNode(0);
         });
 
         //console.log(rect.top, rect.right, rect.bottom, rect.left);
